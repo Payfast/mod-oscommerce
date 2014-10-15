@@ -29,7 +29,7 @@ global $ini;
 define( 'PF_SOFTWARE_NAME', 'osCommerce' );
 define( 'PF_SOFTWARE_VER', tep_get_version() );
 define( 'PF_MODULE_NAME', 'PayFast-osCommerce' );
-define( 'PF_MODULE_VER', '1.21' );
+define( 'PF_MODULE_VER', '1.3' );
 
 // Features
 // - PHP
@@ -141,19 +141,18 @@ function pfGetData()
     else
         return( $pfData );
 }
-// }}}
-// {{{ pfValidSignature
+
 /**
  * pfValidSignature
  * 
  * @author Jonathan Smit
  */
-function pfValidSignature( $pfData = null, &$pfParamString = null )
+function pfValidSignature( $pfData = null, &$pfParamString = null, $pfPassphrase = null )
 {
     // Dump the submitted variables and calculate security signature
     foreach( $pfData as $key => $val )
     {
-    	if( $key != 'signature' )
+        if( $key != 'signature' )
         {
             $pfParamString .= $key .'='. urlencode( $val ) .'&';
         }
@@ -165,16 +164,25 @@ function pfValidSignature( $pfData = null, &$pfParamString = null )
 
     // Remove the last '&' from the parameter string
     $pfParamString = substr( $pfParamString, 0, -1 );
-    $signature = md5( $pfParamString );
+
+    if( !is_null( $pfPassphrase ) )
+    {
+        $pfParamStringWithPassphrase = $pfParamString."&passphrase=". urlencode( $pfPassphrase );
+        $signature = md5( $pfParamStringWithPassphrase );
+    }
+    else
+    {
+        $signature = md5( $pfParamString );
+    }
+
     
     $result = ( $pfData['signature'] == $signature );
 
     pflog( 'Signature = '. ( $result ? 'valid' : 'invalid' ) );
+    pflog('PFString = '.$pfParamString);
+    
+    return $result;
 
-    return( $result );
-}
-// }}}
-// {{{ pfValidData
 /**
  * pfValidData
  *
@@ -270,8 +278,7 @@ function pfValidData( $pfHost = 'www.payfast.co.za', $pfParamString = '', $pfPro
     else
         return( false );
 }
-// }}}
-// {{{ pfValidIP
+
 /**
  * pfValidIP
  *
@@ -308,8 +315,7 @@ function pfValidIP( $sourceIP )
     else
         return( false );
 }
-// }}}
-// {{{ pfAmountsEqual
+
 /**
  * pfAmountsEqual
  * 
