@@ -182,6 +182,7 @@ function pfValidSignature( $pfData = null, &$pfParamString = null, $pfPassphrase
     pflog('PFString = '.$pfParamString);
     
     return $result;
+}
 
 /**
  * pfValidData
@@ -235,7 +236,7 @@ function pfValidData( $pfHost = 'www.payfast.co.za', $pfParamString = '', $pfPro
          
         // Construct Header
         $header = "POST /eng/query/validate HTTP/1.0\r\n";
-       	$header .= "Host: ". $pfHost ."\r\n";
+        $header .= "Host: ". $pfHost ."\r\n";
         $header .= "User-Agent: ". PF_USER_AGENT ."\r\n";
         $header .= "Content-Type: application/x-www-form-urlencoded\r\n";
         $header .= "Content-Length: " . strlen( $pfParamString ) . "\r\n\r\n";
