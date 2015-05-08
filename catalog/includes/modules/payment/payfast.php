@@ -521,12 +521,47 @@ class payfast
         $amount = str_replace( ',', '', $order->info['total'] );
         $amount = number_format( $amount, 2, '.', '' );
 
+      // generate signature
+      $data = array(
+            'merchant_id' => $merchantId,
+            'merchant_key' => $merchantKey,
+            'return_url' => $return_url,
+            'cancel_url'=> $cancel_url,
+            'notify_url' => $notify_url,
+            'name_first' => substr( trim( $order->billing['firstname'] ), 0, 100 ),
+            'name_last' => substr( trim( $order->billing['lastname'] ), 0, 100 ),
+            'email_address' => substr( trim( $order->customer['email_address'] ), 0, 100 ),
+            'm_payment_id' => $order_id, 
+            'amount' => $amount,
+            'item_name' => STORE_NAME .' Purchase, Order #' . $order_id,
+            'item_description' => substr( trim( $item_description ), 0, 255 ),
+            'custom_int1' => $customer_id,            
+            );
+
+        $pfOutput = '';
+        // Create output string
+        foreach( $data as $key => $value )
+            $pfOutput .= $key .'='. urlencode( trim( $value ) ) .'&';
+
+        $passPhrase = trim( MODULE_PAYMENT_PAYFAST_PASSPHRASE );
+
+        if ( empty( $passPhrase ) || ( strcasecmp( MODULE_PAYMENT_PAYFAST_SERVER, 'Live' ) != 0 ) )
+        {
+            $pfOutput = substr( $pfOutput, 0, -1 );
+        }
+        else
+        {
+            $pfOutput = $pfOutput."passphrase=".urlencode( $passPhrase );
+        }
+
+        $pfSignature = md5( $pfOutput ); 
+                
+
 		// Passing hidden fields to process payment
-        $process_button_string =
-        	// Merchant fields
-			tep_draw_hidden_field( 'merchant_id', $merchantId ) .
-			tep_draw_hidden_field( 'merchant_key', $merchantKey ) .
-			tep_draw_hidden_field( 'return_url', $return_url ) .
+        $process_button_string = 
+            tep_draw_hidden_field( 'merchant_id', $merchantId ).
+			tep_draw_hidden_field( 'merchant_key', $merchantKey ).
+			tep_draw_hidden_field( 'return_url', $return_url ).
 			tep_draw_hidden_field( 'cancel_url', $cancel_url ) .
             tep_draw_hidden_field( 'notify_url', $notify_url ) . 
 
@@ -534,17 +569,24 @@ class payfast
 			tep_draw_hidden_field( 'name_first', substr( trim( $order->billing['firstname'] ), 0, 100 ) ) .
 			tep_draw_hidden_field( 'name_last', substr( trim( $order->billing['lastname'] ), 0, 100 ) ) .
             tep_draw_hidden_field( 'email_address', substr( trim( $order->customer['email_address'] ), 0, 100 ) ) .
-			tep_draw_hidden_field( 'custom_int1', $customer_id ).
 
-			// Item details
+            // Item details
+            tep_draw_hidden_field( 'm_payment_id', $order_id ) .
+            tep_draw_hidden_field( 'amount', $amount ) .
 			tep_draw_hidden_field( 'item_name', STORE_NAME .' Purchase, Order #' . $order_id ) .
 			tep_draw_hidden_field( 'item_description', substr( trim( $item_description ), 0, 255 ) ) .
-            tep_draw_hidden_field( 'amount', $amount ) .
-			tep_draw_hidden_field( 'm_payment_id', $order_id ) .
-			tep_draw_hidden_field( 'currency_code', trim( $order->info['currency'] ) ) .
+
+            tep_draw_hidden_field( 'custom_int1', $customer_id ).
+
+            tep_draw_hidden_field( 'signature', $pfSignature );
+            
+			//tep_draw_hidden_field( 'currency_code', trim( $order->info['currency'] ) ) .
 
             // Other details
-            tep_draw_hidden_field( 'user_agent', PF_USER_AGENT );
+            //tep_draw_hidden_field( 'user_agent', PF_USER_AGENT ).
+
+
+
 
 			// Extra fields available
 			//tep_draw_hidden_field( 'company', substr( $order->billing['company'], 0, 50 ) ) .
@@ -557,6 +599,7 @@ class payfast
             //tep_draw_hidden_field( 'customer_ip', tep_get_ip_address()) .
 
         return $process_button_string;
+    
     }
 
     /**
@@ -879,12 +922,16 @@ class payfast
 			VALUES( 'Enable Payfast?', 'MODULE_PAYMENT_PAYFAST_STATUS', 'False', 'Do you want to enable Payfast?', '6', '0', 'tep_cfg_select_option(array(\'True\', \'False\'), ', now() )" );
 		// MODULE_PAYMENT_PAYFAST_MERCHANT_ID (Default = <blank>)
         tep_db_query(
-			"INSERT INTO ". TABLE_CONFIGURATION ."( configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added )
-			VALUES( 'Merchant ID', 'MODULE_PAYMENT_PAYFAST_MERCHANT_ID', '', 'Your Merchant ID from PayFast', '6', '0', now() )" );
-		// MODULE_PAYMENT_PAYFAST_MERCHANT_KEY (Default = <blank>)
+            "INSERT INTO ". TABLE_CONFIGURATION ."( configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added )
+            VALUES( 'Merchant ID', 'MODULE_PAYMENT_PAYFAST_MERCHANT_ID', '', 'Your Merchant ID from PayFast', '6', '0', now() )" );
+        // MODULE_PAYMENT_PAYFAST_MERCHANT_KEY (Default = <blank>)
         tep_db_query(
 			"INSERT INTO ". TABLE_CONFIGURATION ."( configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added )
 			VALUES( 'Merchant Key', 'MODULE_PAYMENT_PAYFAST_MERCHANT_KEY', '', 'Your Merchant Key from PayFast', '6', '0', now() )" );
+         // MODULE_PAYMENT_PAYFAST_PASSPHRASE (Default = <blank>)
+        tep_db_query(
+            "INSERT INTO ". TABLE_CONFIGURATION ."( configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added )
+            VALUES( 'Passphrase', 'MODULE_PAYMENT_PAYFAST_PASSPHRASE', '', 'Your PayFast Passphrase', '6', '0', now() )" );
 		// MODULE_PAYMENT_PAYFAST_SERVER (Default = Test)
         tep_db_query(
 			"INSERT INTO ". TABLE_CONFIGURATION ."( configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, set_function, date_added )
@@ -952,6 +999,7 @@ class payfast
 			'MODULE_PAYMENT_PAYFAST_STATUS',
 			'MODULE_PAYMENT_PAYFAST_MERCHANT_ID',
             'MODULE_PAYMENT_PAYFAST_MERCHANT_KEY',
+            'MODULE_PAYMENT_PAYFAST_PASSPHRASE',
             'MODULE_PAYMENT_PAYFAST_SERVER',
             'MODULE_PAYMENT_PAYFAST_DEBUG',
             'MODULE_PAYMENT_PAYFAST_DEBUG_EMAIL',

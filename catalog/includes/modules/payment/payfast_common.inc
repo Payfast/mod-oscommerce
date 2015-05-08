@@ -147,41 +147,34 @@ function pfGetData()
  * 
  * @author Jonathan Smit
  */
-function pfValidSignature( $pfData = null, &$pfParamString = null, $pfPassphrase = null )
+function pfValidSignature( $pfData = null, &$pfParamString = null, $pfPassphrase = null)
 {
     // Dump the submitted variables and calculate security signature
     foreach( $pfData as $key => $val )
     {
         if( $key != 'signature' )
-        {
             $pfParamString .= $key .'='. urlencode( $val ) .'&';
-        }
-        else
-        {
-            break;
-        }
     }
 
     // Remove the last '&' from the parameter string
     $pfParamString = substr( $pfParamString, 0, -1 );
 
-    if( !is_null( $pfPassphrase ) )
+    if( is_null( $pfPassphrase ) ||  strcasecmp( MODULE_PAYMENT_PAYFAST_SERVER, 'Live' ) != 0 )
     {
-        $pfParamStringWithPassphrase = $pfParamString."&passphrase=". urlencode( $pfPassphrase );
-        $signature = md5( $pfParamStringWithPassphrase );
+        $tempParamString = $pfParamString;
     }
     else
     {
-        $signature = md5( $pfParamString );
+        $tempParamString = $pfParamString."&passphrase=".urlencode( $pfPassphrase );
     }
 
+    $signature = md5( $tempParamString );
     
     $result = ( $pfData['signature'] == $signature );
 
     pflog( 'Signature = '. ( $result ? 'valid' : 'invalid' ) );
-    pflog('PFString = '.$pfParamString);
-    
-    return $result;
+
+    return( $result );
 }
 
 /**
@@ -337,5 +330,5 @@ function pfAmountsEqual( $amount1, $amount2 )
     else
         return( true );
 }
-// }}}
+
 ?>
