@@ -578,26 +578,10 @@ class payfast
 
             tep_draw_hidden_field( 'custom_int1', $customer_id ).
 
-            tep_draw_hidden_field( 'signature', $pfSignature );
+            tep_draw_hidden_field( 'signature', $pfSignature ).
+
+            tep_draw_hidden_field( 'user_agent', 'OsCommerce 2' );
             
-			//tep_draw_hidden_field( 'currency_code', trim( $order->info['currency'] ) ) .
-
-            // Other details
-            //tep_draw_hidden_field( 'user_agent', PF_USER_AGENT ).
-
-
-
-
-			// Extra fields available
-			//tep_draw_hidden_field( 'company', substr( $order->billing['company'], 0, 50 ) ) .
-            //tep_draw_hidden_field( 'address', substr( $order->billing['street_address'], 0, 60 ) ) .
-            //tep_draw_hidden_field( 'city', substr( $order->billing['city'], 0, 40 ) ) .
-            //tep_draw_hidden_field( 'state', substr( $order->billing['state'], 0, 40 ) ) .
-            //tep_draw_hidden_field( 'zip', substr( $order->billing['postcode'], 0, 20 ) ) .
-            //tep_draw_hidden_field( 'country', substr( $order->billing['country']['title'], 0, 60 ) ) .
-            //tep_draw_hidden_field( 'phone', substr( $order->customer['telephone'], 0, 25 ) ) .
-            //tep_draw_hidden_field( 'customer_ip', tep_get_ip_address()) .
-
         return $process_button_string;
     
     }
