@@ -1,3 +1,5 @@
+# mod-oscommerce
+
 PayFast osCommerce Module v1.22 for osCommerce 2.3.1
 ----------------------------------------------------
 Copyright (c) 2008 PayFast (Pty) Ltd
@@ -37,11 +39,4 @@ In order to make the module “Live”, follow the instructions below:
 10. Scroll down to the bottom of the right hand pane and press the “Save” button
 The module is now ready to receive live payments.
 
-
-******************************************************************************
-*                                                                            *
-*    Please see the URL below for all information concerning this module:    *
-*                                                                            *
-*                  https://www.payfast.co.za/shopping-carts/oscommerce/      *
-*                                                                            *
-******************************************************************************
+Please [click here](https://payfast.io/integration/shopping-carts/oscommerce/) for more information concerning this module.
