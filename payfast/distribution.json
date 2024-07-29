@@ -1,0 +1,28 @@
+{
+  "description": "Payfast Payment Gateway",
+  "name": "Payfast",
+  "type": "payment",
+  "version": "1.26.0",
+  "authors": {
+    "name": "Payfast",
+    "email": "support@payfast.help",
+    "homepage": "https://payfast.io/",
+    "role": "Developer"
+  },
+  "src": [
+    {
+      "action": "add",
+      "type": "file",
+      "path": "payfast.php"
+    },
+    {
+      "action": "copy",
+      "type": "dir",
+      "path": "lib/payfast"
+    }
+  ],
+  "require": {
+    "platform": "True"
+  },
+  "class": "payfast"
+}
